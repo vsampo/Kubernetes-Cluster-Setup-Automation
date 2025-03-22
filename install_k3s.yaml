@@ -1,19 +1,19 @@
 ---
   - name: Check cgroup configuration on all nodes
-    hosts: all
+    hosts: picluster
     gather_facts: true
 
     tasks:
       - name: Check if cgroup config is existing or not
-        shell: grep -o "cgroup_memory=1 cgroup_enable=memory" /boot/cmdline.txt
+        shell: grep -o "cgroup_memory=1 cgroup_enable=memory" /boot/firmware/cmdline.txt
         register: out
         failed_when: false
         changed_when: false
 
       - name: Execute if not existing
         shell: |
-                cp /boot/cmdline.txt /boot/cmdline.txt.backup.%date
-                sed -i 's/$/ cgroup_memory=1 cgroup_enable=memory/g' /boot/cmdline.txt 
+                cp /boot/firmware/cmdline.txt /boot/firmware/cmdline.txt.backup.%date
+                sed -i 's/$/ cgroup_memory=1 cgroup_enable=memory/g' /boot/firmware/cmdline.txt 
                 sleep 5 && shutdown -r now "Ansible Rebooting after cgroup configuration"
         when: "'cgroup_memory=1 cgroup_enable=memory' not in out.stdout"
         async: 0
@@ -30,27 +30,7 @@
     hosts: masternode
     gather_facts: no
     
-    tasks: 
-      - name: Check if 10250 is Opened 
-        wait_for:
-          port: 10250
-          delay: 5
-          timeout: 10
-          msg: "10250 is not open"
-        register: port_check
-        ignore_errors: yes
-
-      - name: Open port 10250 in iptables
-        shell: iptables -A INPUT -p tcp --dport 10250 -j ACCEPT
-        when: port_check.failed == true
-        become: true
-        become_method: sudo
-
-      - name: Print message if 10250 is Already Opened 
-        debug:
-          msg: "10250 is already Opened"
-        when: port_check.failed == false
-
+    tasks:
       - name: Install k3s in Master Node
         shell: |
                 curl -sfL https://get.k3s.io | sh -

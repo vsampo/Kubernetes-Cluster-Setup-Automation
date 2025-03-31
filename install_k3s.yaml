@@ -27,7 +27,7 @@
           delay: 5
 
   - name: Master Node Configuration
-    hosts: masternode
+    hosts: masternodes
     gather_facts: no
     
     tasks:
@@ -39,7 +39,7 @@
         become_method: sudo
 
   - name: Gather IP and Node Token from Master Node 
-    hosts: masternode
+    hosts: masternodes
     gather_facts: no
 
     tasks:
